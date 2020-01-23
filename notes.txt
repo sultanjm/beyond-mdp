@@ -1,0 +1,10 @@
+# for any d
+# d = sum_s d[s]*T[s][Pi[s]]
+
+# r[s][a] = Q[s][a] - g*T[s][a]*V
+
+# Q [s,a]
+# T [s,a,s']
+# Pi [s]
+# V [s]
+# R [s,a]
