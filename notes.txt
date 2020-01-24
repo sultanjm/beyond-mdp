@@ -3,8 +3,10 @@
 
 # r[s][a] = Q[s][a] - g*T[s][a]*V
 
-# Q [s,a]
-# T [s,a,s']
+
+We assume:
+# Q [a,s]
+# T [a,s,s']
 # Pi [s]
 # V [s]
-# R [s,a]
+# R [a,s]
