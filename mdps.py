@@ -3,7 +3,8 @@
 import numpy as np
 import itertools
 
-def random_mdp(num_a, num_s, Q=None, g=0.999, epsilon=1e-3):
+def random_mdp(num_a, num_s, Q=None, g=0.999, normalize=False, epsilon=1e-3):
+    # T = np.random.random_sample([num_a, num_s, num_s]) + epsilon
     T = np.random.random_sample([num_a, num_s, num_s]) + epsilon
     T = T/T.sum(axis=2,keepdims=True)
     if Q is None:
@@ -16,8 +17,9 @@ def random_mdp(num_a, num_s, Q=None, g=0.999, epsilon=1e-3):
         # R = np.einsum('ijk,ij->ijk',Tinv,R)
     rmin = R.min()
     rmax = R.max()
-    n = 1/(rmax-rmin)
-    R = n*(R - rmin)
+    if normalize:
+        n = 1/(rmax-rmin)
+        R = n*(R - rmin)
     return T,R,rmin,rmax
 
 def stationary_dist(T, Pi=None, d=None, steps=np.inf, eps=1e-9):
@@ -56,3 +58,12 @@ def surrogate_mdp(T,R,phi,B,states):
     R_mdp = R_mdp / W
     T_mdp = T_mdp / T_mdp.sum(axis=2,keepdims=True)
     return T_mdp,R_mdp
+
+def greedy_policy(Q, epsilon=0.0):
+    num_a,num_s = Q.shape
+    pi = np.zeros([num_s,num_a]) + epsilon/num_a
+    idx = Q.argmax(axis=0)
+    for s in range(num_s):
+        pi[s][idx[s]] = pi[s][idx[s]] + 1
+    pi = pi/pi.sum(axis=1,keepdims=True)
+    return pi
