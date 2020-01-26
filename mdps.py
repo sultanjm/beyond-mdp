@@ -5,10 +5,11 @@ import itertools
 
 def random_mdp(num_a, num_s, Q=None, g=0.999, normalize=False, epsilon=1e-3):
     # T = np.random.random_sample([num_a, num_s, num_s]) + epsilon
-    T = np.random.random_sample([num_a, num_s, num_s]) + epsilon
+    # T = np.random.beta(0.5,0.5, size=[num_a, num_s, num_s]) + epsilon
+    T = random_sample([num_a, num_s, num_s]) + epsilon
     T = T/T.sum(axis=2,keepdims=True)
     if Q is None:
-        R = np.random.random_sample([num_a,num_s,num_s])
+        R = random_sample([num_a,num_s,num_s])
     else:
         V = Q.max(axis=0)
         R = Q - g*np.einsum('ijk,k->ij', T, V)
@@ -67,3 +68,52 @@ def greedy_policy(Q, epsilon=0.0):
         pi[s][idx[s]] = pi[s][idx[s]] + 1
     pi = pi/pi.sum(axis=1,keepdims=True)
     return pi
+
+def random_policy(num_a, num_s, eps=1e-9):
+    pi = random_sample([num_s,num_a]) + eps
+    pi = pi/pi.sum(axis=1,keepdims=True)
+    return pi
+
+def greedy_policy_all(Q, epsilon=0.0):
+    mx = Q.max(axis=0)
+    pi = np.isclose(Q.T, mx[:,np.newaxis])
+    pi = pi/pi.sum(axis=1,keepdims=True)
+    return pi
+
+def same_optimal_policies(pi_1, pi_2):
+    same = True
+    if 0 in np.logical_and(pi_1>0,pi_2>0).sum(axis=1):
+        same = False
+    return same
+
+def random_va_mdp(num_a=2, num_s=80, max_num_x=4, va_eps=1e-6, g=0.999, Q_va=None, normalize_rewards=False):
+    if Q_va is None:
+        Q_va = random_sample([num_a, max_num_x])
+    va_states = list(set(zip(Q_va.max(axis=0) // va_eps, Q_va.argmax(axis=0))))
+    # generate a Q-function with set_x va-states only
+    Q = va_states_repeat(num_a, num_s, va_states, va_eps)
+    # generate an random mdp with Q as the Q-function
+    T,R,rmin,rmax = random_mdp(num_a, num_s, Q, g, normalize_rewards)
+    return T,R,Q,rmin,rmax,
+
+def va_states_repeat(num_a, num_s, va_states, va_eps=1e-6):
+    num_x = len(va_states)
+    # get num_x random fractions of num_s
+    splits = sorted(np.random.choice(range(1,num_s), num_x-1))
+    prop_x = np.array([a - b for a, b in zip(splits + [num_s], [0] + splits)])
+    # for each fraction generate random samples with lower than v value at a
+    Q = np.array([])
+    for x in range(num_x):
+        if prop_x[x] != 0:
+            Qx = va_states[x][0]*va_eps*random_sample([num_a, prop_x[x]])
+            Qx[va_states[x][1],:] = (va_states[x][0] + 0.5)*va_eps
+            if len(Q) != 0:
+                Q = np.concatenate((Q, Qx), axis=1)
+            else:
+                Q = Qx
+    return Q
+
+def random_sample(size):
+    return np.random.randint(2, size=size)
+    # return np.random.beta(0.5,0.5, size=size)
+    # return np.random.random_sample(size)
