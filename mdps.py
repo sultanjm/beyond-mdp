@@ -4,10 +4,22 @@ import numpy as np
 import itertools
 
 def random_mdp(num_a, num_s, Q=None, g=0.999, normalize=False, epsilon=1e-3):
-    # T = np.random.random_sample([num_a, num_s, num_s]) + epsilon
-    # T = np.random.beta(0.5,0.5, size=[num_a, num_s, num_s]) + epsilon
     T = random_sample([num_a, num_s, num_s]) + epsilon
     T = T/T.sum(axis=2,keepdims=True)
+    R, rmin, rmax = reward_matrix(num_a, num_s, T, Q, g, normalize)
+    return T,R,rmin,rmax
+
+def random_skewed_mdp(num_a, num_s, Q=None, g=0.999, normalize=False, epsilon=1e-9):
+    idx = np.random.choice(range(num_s), num_a * num_s)
+    idx2 = [num_s*x+idx[x] for x in range(len(idx))]
+    T = np.zeros(num_a*num_s*num_s) + epsilon
+    T[idx2] = 1
+    T = T.reshape([num_a, num_s, num_s])
+    T = T/T.sum(axis=2,keepdims=True)
+    R, rmin, rmax = reward_matrix(num_a, num_s, T, Q, g, normalize)
+    return T,R,rmin,rmax
+
+def reward_matrix(num_a, num_s, T, Q=None, g=0.999, normalize=False):
     if Q is None:
         R = random_sample([num_a,num_s,num_s])
     else:
@@ -21,7 +33,7 @@ def random_mdp(num_a, num_s, Q=None, g=0.999, normalize=False, epsilon=1e-3):
     if normalize:
         n = 1/(rmax-rmin)
         R = n*(R - rmin)
-    return T,R,rmin,rmax
+    return R,rmin,rmax
 
 def stationary_dist(T, Pi=None, d=None, steps=np.inf, eps=1e-9):
     if d is None:
@@ -39,6 +51,27 @@ def stationary_dist(T, Pi=None, d=None, steps=np.inf, eps=1e-9):
             done = True
         steps -= 1
     return d
+
+def stationary_dist_cesaro(T, Pi=None, d=None, steps=np.inf, eps=1e-6):
+    if d is None:
+        d = np.random.random_sample(T.shape[1])
+        d = d/d.sum()
+    if Pi is not None:
+        T = np.einsum('ijk,ji->jk',T,Pi)
+    done = False
+    t = 1
+    old_avg = np.zeros(T.shape[1])
+    while steps and not done:
+        delta = 0
+        d = np.einsum('ij,i->j',T,d)
+        new_avg = old_avg + (1/t)*(d - old_avg)
+        t += 1
+        delta = max(delta, np.linalg.norm(old_avg - new_avg))
+        old_avg = new_avg
+        if delta < eps:
+            done = True
+        steps -= 1
+    return new_avg
 
 def surrogate_mdp(T,R,phi,B,states):
     num_x = len(states)
@@ -74,6 +107,11 @@ def random_policy(num_a, num_s, eps=1e-9):
     pi = pi/pi.sum(axis=1,keepdims=True)
     return pi
 
+def fixed_policy(num_a, num_s, the_action=0, eps=1e-9):
+    pi = np.zeros([num_s,num_a])
+    pi[:, the_action] = 1
+    return pi
+
 def greedy_policy_all(Q, epsilon=0.0):
     mx = Q.max(axis=0)
     pi = np.isclose(Q.T, mx[:,np.newaxis])
@@ -93,7 +131,7 @@ def random_va_mdp(num_a=2, num_s=80, max_num_x=4, va_eps=1e-6, g=0.999, Q_va=Non
     # generate a Q-function with set_x va-states only
     Q = va_states_repeat(num_a, num_s, va_states, va_eps)
     # generate an random mdp with Q as the Q-function
-    T,R,rmin,rmax = random_mdp(num_a, num_s, Q, g, normalize_rewards)
+    T,R,rmin,rmax = random_skewed_mdp(num_a, num_s, Q, g, normalize_rewards)
     return T,R,Q,rmin,rmax,
 
 def va_states_repeat(num_a, num_s, va_states, va_eps=1e-6):

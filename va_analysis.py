@@ -19,7 +19,9 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps):
     num_x = len(va_states)
     # use ANY explorative policy to get a stationary distribution on T
     pi_behavior = mdps.random_policy(num_a,num_s)
-    d = mdps.stationary_dist(T, pi_behavior)
+    # pi_behavior = mdps.fixed_policy(num_a,num_s)
+    # d = mdps.stationary_dist(T, pi_behavior)
+    d = mdps.stationary_dist_cesaro(T, pi_behavior, steps=10000)
     B = [d for a in range(num_a)]
     # use d and phi to get a surrogate MDP (T_mdp,R_mdp)
     # print("Creating the surrogate MDP.")
@@ -49,8 +51,8 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps):
 def weighted_norm(A,w):
     return np.sqrt((w*A*A).sum())
 
-def va_analysis(tries=1000, num_s=8, num_a=2, num_x=4, g=0.999, va_eps=1e-6, eps=1e-9):
-    with open('va_counter_examples.pickle', 'a+') as f:
+def va_analysis(tries=100, num_s=16, num_a=4, num_x=2, g=0.999, va_eps=1e-6, eps=1e-9):
+    with open('va_counter_examples.pickle', 'ab+') as f:
         num_found = 0
         for t in range(tries):
             result = va_simulation(num_s, num_a, num_x, g, va_eps, eps)
