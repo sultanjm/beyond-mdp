@@ -89,7 +89,7 @@ def surrogate_mdp(T,R,phi,B,states):
         R_mdp[a][x] = R_mdp[a][x] + B[a][s]*R[a][s]
         T_mdp[a][x] = T_mdp[a][x] + B[a][s]*pre_T_mdp[a][s]
         W[a][x] = W[a][x] + B[a][s]
-    R_mdp = R_mdp / W
+    R_mdp = np.divide(R_mdp, W, out=np.zeros_like(R_mdp), where=W!=0)
     T_mdp = T_mdp / T_mdp.sum(axis=2,keepdims=True)
     return T_mdp,R_mdp
 
