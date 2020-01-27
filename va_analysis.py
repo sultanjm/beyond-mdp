@@ -18,10 +18,10 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps):
     va_states = list(set(phi))
     num_x = len(va_states)
     # use ANY explorative policy to get a stationary distribution on T
-    pi_behavior = mdps.random_policy(num_a,num_s)
-    # pi_behavior = mdps.fixed_policy(num_a,num_s)
+    # pi_behavior = mdps.random_policy(num_a,num_s)
+    pi_behavior = mdps.fixed_policy(num_a,num_s)
     # d = mdps.stationary_dist(T, pi_behavior)
-    d = mdps.stationary_dist_cesaro(T, pi_behavior, steps=10000)
+    d = mdps.stationary_dist_cesaro(T, pi_behavior)
     B = [d for a in range(num_a)]
     # use d and phi to get a surrogate MDP (T_mdp,R_mdp)
     # print("Creating the surrogate MDP.")
