@@ -52,14 +52,17 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps):
 def weighted_norm(A,w):
     return np.sqrt((w*A*A).sum())
 
-def va_analysis(tries=100, num_s=16, num_a=4, num_x=2, g=0.999, va_eps=1e-6, eps=1e-9):
-    with open('va_counter_examples.pickle', 'ab+') as f:
-        num_found = 0
-        for t in range(tries):
-            result = va_simulation(num_s, num_a, num_x, g, va_eps, eps)
-            # we have found a counter example
-            if result['success'] == False:
-                num_found += 1
+def va_analysis(tries=1000000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9):
+    num_found = 0
+    for t in range(tries):
+        num_x = 4 + np.random.choice(range(3))
+        num_a = 2 + np.random.choice(range(2))
+        num_s = 8 + np.random.choice(range(5))
+        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps)
+        # we have found a counter example
+        if result['success'] == False:
+            num_found += 1
+            with open('va_counter_examples.pickle', 'ab+') as f:
                 pickle.dump(result, f)
-            print("{}/{} Tries with {} counter-example(s) found.".format(t,tries,num_found), end='\r')
+        print("{}/{} Tries with {} counter-example(s) found.".format(t+1,tries,num_found), end='\r')
 va_analysis()
