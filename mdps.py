@@ -128,7 +128,7 @@ def same_optimal_policies(pi_base, pi):
     same = False
     if common_support_policies(pi_base, pi):
         pi_base_neg = np.isclose(pi_base, 0.0)
-        if not common_support_policies(pi_base_neg, pi):
+        if not 1 in np.logical_and(pi_base_neg,pi>0).sum(axis=1):
             same = True
     return same
 

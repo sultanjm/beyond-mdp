@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 def pickle_data_analysis_center():
-    data = loadall("va_counter_examples.pickle")
+    data = loadall("va_counter_examples_converted.pickle")
     plt.figure(1)
     plt.subplot(221)
     v_plt = plt.gca()
