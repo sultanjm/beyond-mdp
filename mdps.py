@@ -118,10 +118,18 @@ def greedy_policy_all(Q, epsilon=0.0):
     pi = pi/pi.sum(axis=1,keepdims=True)
     return pi
 
-def same_optimal_policies(pi_1, pi_2):
+def common_support_policies(pi_1, pi_2):
     same = True
     if 0 in np.logical_and(pi_1>0,pi_2>0).sum(axis=1):
         same = False
+    return same
+
+def same_optimal_policies(pi_base, pi):
+    same = False
+    if common_support_policies(pi_base, pi):
+        pi_base_neg = np.isclose(pi_base, 0.0)
+        if not common_support_policies(pi_base_neg, pi):
+            same = True
     return same
 
 def random_va_mdp(num_a=2, num_s=80, max_num_x=4, va_eps=1e-6, g=0.999, Q_va=None, normalize_rewards=False):
