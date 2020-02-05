@@ -4,10 +4,11 @@ import algos
 import numpy as np
 import pickle
 
-def va_simulation(num_s, num_a, num_x, g, va_eps, eps):
-    T,R,Q,rmin,rmax = mdps.random_va_mdp(num_a,num_s,num_x,va_eps,g)
+def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=False):
+    T,R,Q,rmin,rmax = mdps.random_va_mdp(num_a,num_s,num_x,va_eps,g,normalize_rewards=normalize_rewards)
     # normalize Q with rmin and rmax
-    # Q = (Q - rmin/(1-g))/(rmax-rmin)
+    if normalize_rewards:
+        Q = (Q - rmin/(1-g))/(rmax-rmin)
     # get the optimal policy
     # pi = mdps.greedy_policy(Q)
     pi = mdps.greedy_policy_all(Q)
@@ -47,22 +48,27 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps):
     rtrn['pi'] = pi; rtrn['pi_via_mdp'] = pi_via_mdp
     rtrn['Q'] = Q; rtrn['Q_via_mdp'] = Q_via_mdp
     rtrn['d'] = d; rtrn['Q_norm'] = np.linalg.norm(Q-Q_via_mdp); rtrn['Q_d_norm'] = weighted_norm(Q-Q_via_mdp, d); rtrn['B'] = B
+    rtrn['normalized_rewards'] = normalize_rewards
     return rtrn
 
 def weighted_norm(A,w):
     return np.sqrt((w*A*A).sum())
 
-def va_analysis(tries=1000000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9):
+def va_analysis(tries=1000000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=False):
     num_found = 0
     for t in range(tries):
         num_x = 4 + np.random.choice(range(3))
         num_a = 2 + np.random.choice(range(2))
         num_s = 8 + np.random.choice(range(5))
-        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps)
+        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards)
         # we have found a counter example
         if result['success'] == False:
             num_found += 1
-            with open('va_counter_examples.pickle', 'ab+') as f:
+            if normalize_rewards:
+                fname = 'va_counter_examples_normalized_rewards.pickle'
+            else:
+                fname = 'va_counter_examples.pickle'
+            with open(fname, 'ab+') as f:
                 pickle.dump(result, f)
         print("{}/{} Tries with {} counter-example(s) found.".format(t+1,tries,num_found), end='\r')
 va_analysis()
