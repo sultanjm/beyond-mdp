@@ -54,7 +54,7 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=False):
 def weighted_norm(A,w):
     return np.sqrt((w*A*A).sum())
 
-def va_analysis(tries=1000000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=False):
+def va_analysis(tries=100000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=True):
     num_found = 0
     for t in range(tries):
         num_x = 4 + np.random.choice(range(3))
