@@ -4,7 +4,7 @@ import algos
 import numpy as np
 import pickle
 
-def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=False):
+def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=True, state_behavior=True):
     T,R,Q,rmin,rmax = mdps.random_va_mdp(num_a,num_s,num_x,va_eps,g,normalize_rewards=normalize_rewards)
     # normalize Q with rmin and rmax
     if normalize_rewards:
@@ -18,8 +18,13 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=False):
     # phi = Q.max(axis=0) // va_eps
     va_states = list(set(phi))
     num_x = len(va_states)
-    # use ANY explorative policy to get a stationary distribution on T
-    pi_behavior = mdps.random_policy(num_a,num_s)
+    if state_behavior:
+        # use ANY STATIONARY VA-STATE BASED explorative policy to get a stationary distribution on T
+        pi_x = mdps.random_policy(num_a, num_x)
+        pi_behavior = np.array([pi_x[va_states.index(x)] for x in phi])
+    else:
+        # use ANY explorative policy to get a stationary distribution on T
+        pi_behavior = mdps.random_policy(num_a,num_s)
     # pi_behavior = mdps.fixed_policy(num_a,num_s)
     d = mdps.stationary_dist_cesaro(T, pi_behavior)
     # build B
@@ -48,27 +53,24 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=False):
     rtrn['pi'] = pi; rtrn['pi_via_mdp'] = pi_via_mdp
     rtrn['Q'] = Q; rtrn['Q_via_mdp'] = Q_via_mdp
     rtrn['d'] = d; rtrn['Q_norm'] = np.linalg.norm(Q-Q_via_mdp); rtrn['Q_d_norm'] = weighted_norm(Q-Q_via_mdp, d); rtrn['B'] = B
-    rtrn['normalized_rewards'] = normalize_rewards
+    rtrn['normalized_rewards'] = normalize_rewards; rtrn['pi_behavior'] = pi_behavior
+    rtrn['g'] = g; rtrn['va_eps'] = va_eps; rtrn['eps'] = eps; rtrn['state_behavior'] = state_behavior
     return rtrn
 
 def weighted_norm(A,w):
     return np.sqrt((w*A*A).sum())
 
-def va_analysis(tries=100000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=True):
+def va_analysis(tries=100000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=True, state_behavior=True):
     num_found = 0
     for t in range(tries):
         num_x = 4 + np.random.choice(range(3))
         num_a = 2 + np.random.choice(range(2))
         num_s = 8 + np.random.choice(range(5))
-        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards)
+        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards, state_behavior)
         # we have found a counter example
         if result['success'] == False:
             num_found += 1
-            if normalize_rewards:
-                fname = 'va_counter_examples_normalized_rewards.pickle'
-            else:
-                fname = 'va_counter_examples.pickle'
-            with open(fname, 'ab+') as f:
+            with open('va_counter_examples_nr_sb.pickle', 'ab+') as f:
                 pickle.dump(result, f)
         print("{}/{} Tries with {} counter-example(s) found.".format(t+1,tries,num_found), end='\r')
 va_analysis()
