@@ -160,6 +160,7 @@ def va_states_repeat(num_a, num_s, va_states, va_eps=1e-6):
     return Q
 
 def random_sample(size):
-    return np.random.randint(8, size=size)
+    levels = 8
+    return np.random.randint(levels, size=size) / (levels - 1)
     # return np.random.beta(0.5,0.5, size=size)
     # return np.random.random_sample(size)
