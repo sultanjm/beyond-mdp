@@ -4,8 +4,10 @@ import algos
 import numpy as np
 import pickle
 
-def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=True, state_behavior=True):
-    T,R,Q,rmin,rmax = mdps.random_va_mdp(num_a,num_s,num_x,va_eps,g,normalize_rewards=normalize_rewards)
+import sys
+
+def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards, state_behavior, all_opt_acts):
+    T,R,Q,rmin,rmax = mdps.random_va_mdp(num_a,num_s,num_x,va_eps,g,normalize_rewards,all_opt_acts)
     # normalize Q with rmin and rmax
     if normalize_rewards:
         Q = (Q - rmin/(1-g))/(rmax-rmin)
@@ -13,7 +15,7 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=True, s
     # pi = mdps.greedy_policy(Q)
     pi = mdps.greedy_policy_all(Q)
     # do VA abstraction of T based on Q
-    phi = list(zip(Q.max(axis=0) // va_eps, Q.argmax(axis=0)))
+    phi = list(mdps.get_va_states(Q, va_eps, all_opt_acts))
     # phi = Q.argmax(axis=0)
     # phi = Q.max(axis=0) // va_eps
     va_states = list(set(phi))
@@ -55,18 +57,19 @@ def va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards=True, s
     rtrn['d'] = d; rtrn['Q_norm'] = np.linalg.norm(Q-Q_via_mdp); rtrn['Q_d_norm'] = weighted_norm(Q-Q_via_mdp, d); rtrn['B'] = B
     rtrn['normalized_rewards'] = normalize_rewards; rtrn['pi_behavior'] = pi_behavior
     rtrn['g'] = g; rtrn['va_eps'] = va_eps; rtrn['eps'] = eps; rtrn['state_behavior'] = state_behavior
+    rtrn['all_opt_acts'] = all_opt_acts
     return rtrn
 
 def weighted_norm(A,w):
     return np.sqrt((w*A*A).sum())
 
-def va_analysis(tries=100000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=True, state_behavior=True):
+def va_analysis(tries=100000, num_s=6, num_a=2, num_x=3, g=0.999, va_eps=1e-6, eps=1e-9, normalize_rewards=True, state_behavior=True, all_opt_acts=False):
     num_found = 0
     for t in range(tries):
         num_x = 4 + np.random.choice(range(3))
         num_a = 2 + np.random.choice(range(2))
         num_s = 8 + np.random.choice(range(5))
-        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards, state_behavior)
+        result = va_simulation(num_s, num_a, num_x, g, va_eps, eps, normalize_rewards, state_behavior, all_opt_acts)
         # we have found a counter example
         if result['success'] == False:
             num_found += 1

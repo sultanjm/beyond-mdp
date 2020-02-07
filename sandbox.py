@@ -10,6 +10,6 @@ def sandbox():
     # pi2 = np.array([[0.5,0.5]])
     # print(mdps.same_optimal_policies(pi1,pi2))
     # print(mdps.same_optimal_policies(pi2,pi1))
-    print(mdps.random_sample(4))
+    mdps.random_vaa_mdp()
 
 sandbox()

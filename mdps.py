@@ -132,15 +132,30 @@ def same_optimal_policies(pi_base, pi):
             same = True
     return same
 
-def random_va_mdp(num_a=2, num_s=80, max_num_x=4, va_eps=1e-6, g=0.999, Q_va=None, normalize_rewards=False):
+def random_va_mdp(num_a=2, num_s=80, max_num_x=4, va_eps=1e-6, g=0.999, normalize_rewards=False, all_opt_acts=False, Q_va=None):
     if Q_va is None:
         Q_va = random_sample([num_a, max_num_x])
-    va_states = list(set(zip(Q_va.max(axis=0) // va_eps, Q_va.argmax(axis=0))))
+    va_states = list(set(get_va_states(Q_va,va_eps,all_opt_acts)))
     # generate a Q-function with set_x va-states only
     Q = va_states_repeat(num_a, num_s, va_states, va_eps)
     # generate an random mdp with Q as the Q-function
     T,R,rmin,rmax = random_skewed_mdp(num_a, num_s, Q, g, normalize_rewards)
-    return T,R,Q,rmin,rmax,
+    return T,R,Q,rmin,rmax
+    
+def get_va_states(Q, va_eps=1e-6, all_opt_acts=False):
+    opt_acts = pack_opt_acts(Q, all_opt_acts)
+    return zip(Q.max(axis=0) // va_eps, opt_acts)
+
+def pack_opt_acts(Q, all_opt_acts=False):
+    if all_opt_acts:
+        V_mask = np.isclose(Q.T, Q.max(axis=0)[:,np.newaxis])
+    else:
+        V_mask = Q.argmax(axis=0)[:,None] == range(Q.shape[0])
+    return [V_mask[s].dot(1 << np.arange(V_mask[s].size)[::-1]) for s in range(Q.shape[1])]        
+
+
+def unpack_opt_acts(dec_act):
+    return np.fromstring(np.binary_repr(dec_act), dtype='S1').astype(int)
 
 def va_states_repeat(num_a, num_s, va_states, va_eps=1e-6):
     num_x = len(va_states)
@@ -152,12 +167,14 @@ def va_states_repeat(num_a, num_s, va_states, va_eps=1e-6):
     for x in range(num_x):
         if prop_x[x] != 0:
             Qx = va_states[x][0]*va_eps*random_sample([num_a, prop_x[x]])
-            Qx[va_states[x][1],:] = (va_states[x][0] + 0.5)*va_eps
+            acts = unpack_opt_acts(va_states[x][1])
+            Qx[np.where(acts == 1),:] = (va_states[x][0] + 0.5)*va_eps
             if len(Q) != 0:
                 Q = np.concatenate((Q, Qx), axis=1)
             else:
                 Q = Qx
     return Q
+
 
 def random_sample(size):
     levels = 8
