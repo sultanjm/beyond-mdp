@@ -19,6 +19,7 @@ parser.add_argument("--steps", default=np.inf, type=int, help="value/policy iter
 parser.add_argument("--greedy_eps", default=1e-3, type=float, help="epsilon-greedy choice")
 parser.add_argument("-n", action="store_true", help="normalize rewards")
 parser.add_argument("-s", action="store_true", help="state-based behavior policy")
+parser.add_argument("-u", action="store_true", help="uniform random behavior policy")
 parser.add_argument("-a", action="store_true", help="aggregate all optimal actions")
 parser.add_argument("--file", required=True, type=str, help="output file")
 

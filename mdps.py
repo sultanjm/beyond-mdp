@@ -106,7 +106,11 @@ def greedy_policy(Q, args):
     return pi
 
 def random_policy(num_a, num_s, args):
-    pi = random_sample([num_s,num_a]) + args.eps
+    # uniform random policy
+    if args.u:
+        pi = np.random.random_sample([num_s,num_a]) + args.eps
+    else:
+        pi = random_sample([num_s,num_a]) + args.eps
     pi = pi/pi.sum(axis=1,keepdims=True)
     return pi
 
