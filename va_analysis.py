@@ -47,7 +47,7 @@ def va_simulation(num_a, num_s, num_x, args):
         # use ANY explorative policy to get a stationary distribution on T
         pi_behavior = mdps.random_policy(num_a, num_s, args)
     # pi_behavior = mdps.fixed_policy(num_a,num_s)
-    d = mdps.stationary_dist_cesaro(T, args, pi_behavior)
+    d = mdps.stationary_dist_eigenvalue(T, args, pi_behavior)
     # build B
     B = pi_behavior * d[:, np.newaxis]
     B = B.T

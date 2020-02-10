@@ -1,6 +1,7 @@
 # generate random ergodic mdps
 
 import numpy as np
+import scipy.linalg as la
 import itertools
 
 def random_mdp(num_a, num_s, args, Q=None):
@@ -53,6 +54,20 @@ def stationary_dist(T, args, Pi=None, d=None):
             done = True
         steps -= 1
     return d
+
+def stationary_dist_eigenvalue(T, args, Pi=None, d=None):
+    if d is None:
+        d = np.random.random_sample(T.shape[1])
+        d = d/d.sum()
+    if Pi is not None:
+        T = np.einsum('ijk,ji->jk',T,Pi)
+    w, vl, vr = la.eig(T.T, left=True)
+    idx = np.where(np.isclose(w,1))
+    for i in idx[0]:
+        d = vl[:,i]/vl[:,i].sum()
+        if np.alltrue(d >= 0) and np.isclose(d.sum(), 1):
+            break
+    return d.real
 
 def stationary_dist_cesaro(T, args, Pi=None, d=None):
     if d is None:

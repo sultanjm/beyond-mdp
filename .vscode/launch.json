@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "internalConsole",
-            "args": ["-rns", "--file", "test.pickle"]
+            "args": ["-nrsu", "--file", "test.pickle"]
         }
     ]
 }
