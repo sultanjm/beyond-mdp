@@ -27,7 +27,7 @@ parser.add_argument("--file", type=str, help="output file")
 args = parser.parse_args()
 
 def pickle_data_analysis_center(args):
-    data = loadall("va_counter_examples_nrsu.pickle")
+    data = loadall("data-sets/va_cx_nr.pickle")
     msize = 3
     plt.figure(1)
     plt.subplot(221)
@@ -48,8 +48,9 @@ def pickle_data_analysis_center(args):
     # q_log_plt.set_xscale('log')
     idx_d = 0
     for d in data:
-        if idx_d > 2000:
-            break
+        # if idx_d > 2000:
+        #     break
+        num_a, num_s, _ = d['T'].shape
         q_y = np.abs(d['Q'] - d['Q_via_mdp'])
         q_x = d['B']
         idx = d['Q'].argmax(axis=0)
@@ -64,8 +65,8 @@ def pickle_data_analysis_center(args):
         # v_log_plt.scatter(v_x, v_y, s=2)
         q_plt.scatter(q_x, q_y, s=msize)
         # q_log_plt.scatter(q_x, q_y, s=2)
-        q_norm_plt.scatter(idx_d, weighted_norm(q_y, q_x), s=msize)
-        v_norm_plt.scatter(idx_d, weighted_norm(v_y, v_x), s=msize)
+        q_norm_plt.scatter(num_a + num_s, weighted_norm(q_y, q_x), s=msize)
+        v_norm_plt.scatter(num_a + num_s, weighted_norm(v_y, v_x), s=msize)
         idx_d += 1
     # h_x = np.linspace(0,1,100)
     # h_y = f(h_x)
