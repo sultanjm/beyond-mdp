@@ -27,7 +27,7 @@ parser.add_argument("--file", type=str, help="output file")
 args = parser.parse_args()
 
 def pickle_data_analysis_center(args):
-    data = loadall("data-sets/va_cx_nrs.pickle")
+    data = loadall("data-sets/va_cx_nrsu.pickle")
     msize = 3
     plt.figure(1)
     plt.subplot(221)
@@ -65,8 +65,8 @@ def pickle_data_analysis_center(args):
         # v_log_plt.scatter(v_x, v_y, s=2)
         q_plt.scatter(q_x, q_y, s=msize)
         # q_log_plt.scatter(q_x, q_y, s=2)
-        q_norm_plt.scatter(num_a + num_s, weighted_norm(q_y, q_x), s=msize)
-        v_norm_plt.scatter(num_a + num_s, weighted_norm(v_y, v_x), s=msize)
+        q_norm_plt.scatter(num_s + num_a, q_y.max()-q_y.min(), s=msize)
+        v_norm_plt.scatter(num_s + num_a, v_y.max()-v_y.min(), s=msize)
         idx_d += 1
     # h_x = np.linspace(0,1,100)
     # h_y = f(h_x)
