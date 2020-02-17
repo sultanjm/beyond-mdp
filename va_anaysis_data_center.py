@@ -27,7 +27,7 @@ parser.add_argument("--file", type=str, help="output file")
 args = parser.parse_args()
 
 def pickle_data_analysis_center(args):
-    data = loadall("data-sets/va_cx_nrsu.pickle")
+    data = loadall("data-sets/va_cx_nrs_eps_5.pickle")
     msize = 3
     plt.figure(1)
     plt.subplot(221)
