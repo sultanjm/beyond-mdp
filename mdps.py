@@ -61,7 +61,7 @@ def stationary_dist_eigenvalue(T, args, Pi=None, d=None):
         d = d/d.sum()
     if Pi is not None:
         T = np.einsum('ijk,ji->jk',T,Pi)
-    w, vl, vr = la.eig(T.T, left=True)
+    w, vl, _ = la.eig(T.T, left=True)
     idx = np.where(np.isclose(w,1))
     for i in idx[0]:
         d = vl[:,i]/vl[:,i].sum()

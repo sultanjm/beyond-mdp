@@ -16,7 +16,7 @@ parser.add_argument("--tries", default=100000, type=int, help="maximum simulatio
 parser.add_argument("--va_eps", default=1e-6, type=float, help="aggregation tolerance")
 parser.add_argument("--eps", default=1e-7, type=float, help="simulation tolerance")
 parser.add_argument("--steps", default=np.inf, type=int, help="value/policy iteration maximum steps")
-parser.add_argument("--greedy_eps", default=1e-3, type=float, help="epsilon-greedy choice")
+parser.add_argument("--greedy_eps", default=0.0, type=float, help="epsilon-greedy choice")
 parser.add_argument("-n", action="store_true", help="normalize rewards")
 parser.add_argument("-s", action="store_true", help="state-based behavior policy")
 parser.add_argument("-u", action="store_true", help="uniform random behavior policy")
@@ -31,7 +31,8 @@ def va_simulation(num_a, num_s, num_x, args):
     if args.n:
         Q = (Q - rmin/(1-args.g))/(rmax-rmin)
     # get the (all) optimal policy
-    pi = mdps.greedy_policy_all(Q, args)
+    # pi = mdps.greedy_policy_all(Q, args)
+    pi = mdps.greedy_policy(Q, args)
     # do VA abstraction of T based on Q
     phi = list(mdps.va_states(Q, args))
     # unique va-states
@@ -54,21 +55,22 @@ def va_simulation(num_a, num_s, num_x, args):
     # use B and phi to get a surrogate MDP (T_mdp,R_mdp)
     T_mdp,R_mdp = mdps.surrogate_mdp(T, R, phi, B, va_states)
     # get the optimal policy on this surrogate MDP using VI
-    Q_mdp = algos.tabular_vi(T_mdp, R_mdp, args)
-    #pi_mdp = mdps.greedy_policy(Q_mdp)
-    pi_mdp = mdps.greedy_policy_all(Q_mdp, args)
+    Q_mdp, _ = algos.tabular_vi(T_mdp, R_mdp, args)
+    pi_mdp = mdps.greedy_policy(Q_mdp, args)
+    # pi_mdp = mdps.greedy_policy_all(Q_mdp, args)
     # use this optimal policy to get values of (T,R)
     pi_via_mdp = np.array([pi_mdp[va_states.index(x)] for x in phi])
     # check if surrogate MDP provides an optimal policy
     Q_via_mdp = Q
+    V_via_mdp = Q.argmax(axis=0)
     success = True
     if not mdps.same_optimal_policies(pi, pi_via_mdp):
-        Q_via_mdp = algos.tabular_vi(T, R, args, pi_via_mdp)
+        Q_via_mdp, V_via_mdp = algos.tabular_vi(T, R, args, pi_via_mdp)
         success = False
     result_var = ['success', 
                   'T', 'R', 'rmin', 'rmax',
                   'pi', 'pi_via_mdp', 'pi_behavior',
-                  'Q', 'Q_via_mdp', 'd', 'B', 
+                  'Q', 'Q_via_mdp', 'V_via_mdp', 'd', 'B', 
                   'va_states', 'phi', 
                   'pi_mdp', 'Q_mdp', 'T_mdp', 'R_mdp',
                   'args']

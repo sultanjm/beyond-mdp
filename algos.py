@@ -21,7 +21,7 @@ def tabular_vi(T, R, args, pi=None):
         if delta < args.eps:
             done = True
         steps -= 1
-    return Q
+    return Q, V
 
 def tabular_q_learning():
     pass
