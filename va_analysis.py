@@ -69,6 +69,8 @@ def va_simulation(num_a, num_s, num_x, args):
                   'T', 'R', 'rmin', 'rmax',
                   'pi', 'pi_via_mdp', 'pi_behavior',
                   'Q', 'Q_via_mdp', 'd', 'B', 
+                  'va_states', 'phi', 
+                  'pi_mdp', 'Q_mdp', 'T_mdp', 'R_mdp',
                   'args']
     result = dict()
     for i in result_var:
