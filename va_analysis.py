@@ -62,7 +62,7 @@ def va_simulation(num_a, num_s, num_x, args):
     pi_via_mdp = np.array([pi_mdp[va_states.index(x)] for x in phi])
     # check if surrogate MDP provides an optimal policy
     Q_via_mdp = Q
-    V_via_mdp = Q.argmax(axis=0)
+    V_via_mdp = Q.max(axis=0)
     success = True
     if not mdps.same_optimal_policies(pi, pi_via_mdp):
         Q_via_mdp, V_via_mdp = algos.tabular_vi(T, R, args, pi_via_mdp)

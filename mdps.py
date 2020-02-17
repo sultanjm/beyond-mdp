@@ -200,7 +200,7 @@ def va_states_repeat(num_a, num_s, states, args):
 
 
 def random_sample(size):
-    levels = 8
+    levels = 2
     return np.random.randint(levels, size=size) / (levels - 1)
     # return np.random.beta(0.5,0.5, size=size)
     # return np.random.random_sample(size)

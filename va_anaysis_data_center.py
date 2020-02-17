@@ -74,7 +74,7 @@ def pickle_data_analysis_center(args):
     plt.show()
 
 def pickle_data_analysis_center_2(args2):
-    data = loadall("va_cx_nr_new_test_2.pickle")
+    data = loadall("test.pickle")
     msize = 3
     plt.figure(1)
     plt.subplot(221)
