@@ -8,7 +8,7 @@ def random_mdp(num_a, num_s, args, Q=None):
     T = random_sample([num_a, num_s, num_s]) + args.eps
     T = T/T.sum(axis=2,keepdims=True)
     R, rmin, rmax = reward_matrix(num_a, num_s, T, args, Q)
-    return T,R,rmin,rmax
+    return T,R,Q,rmin,rmax
 
 def random_skewed_mdp(num_a, num_s, args, Q=None):
     idx = np.random.choice(range(num_s), num_a * num_s)
@@ -18,11 +18,11 @@ def random_skewed_mdp(num_a, num_s, args, Q=None):
     T = T.reshape([num_a, num_s, num_s])
     T = T/T.sum(axis=2,keepdims=True)
     R, rmin, rmax = reward_matrix(num_a, num_s, T, args, Q)
-    return T,R,rmin,rmax
+    return T,R,Q,rmin,rmax
 
 def reward_matrix(num_a, num_s, T, args, Q=None):
     if Q is None:
-        R = random_sample([num_a,num_s,num_s])
+        R = random_sample([num_a,num_s])
     else:
         V = Q.max(axis=0)
         R = Q - args.g*np.einsum('ijk,k->ij', T, V)
@@ -61,7 +61,8 @@ def stationary_dist_eigenvalue(T, args, Pi=None, d=None):
         d = d/d.sum()
     if Pi is not None:
         T = np.einsum('ijk,ji->jk',T,Pi)
-    w, vl, _ = la.eig(T.T, left=True)
+    w, vl, _ = la.eig(T, left=True)
+    #w, vl, _ = la.eig(T.T, left=True)
     idx = np.where(np.isclose(w,1))
     for i in idx[0]:
         d = vl[:,i]/vl[:,i].sum()
