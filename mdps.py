@@ -33,8 +33,11 @@ def reward_matrix(num_a, num_s, T, args, Q=None):
     rmax = R.max()
     # normalize rewards
     if args.n:
-        n = 1/(rmax-rmin)
-        R = n*(R - rmin)
+        if np.isclose(rmax, rmin):
+            R = R/rmax
+        else:
+            n = 1/(rmax-rmin)
+            R = n*(R - rmin)
     return R,rmin,rmax
 
 def stationary_dist(T, args, Pi=None, d=None):
