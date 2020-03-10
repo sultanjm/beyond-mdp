@@ -65,7 +65,6 @@ def stationary_dist_eigenvalue(T, args, Pi=None, d=None):
     if Pi is not None:
         T = np.einsum('ijk,ji->jk',T,Pi)
     w, vl, _ = la.eig(T, left=True)
-    #w, vl, _ = la.eig(T.T, left=True)
     idx = np.where(np.isclose(w,1))
     for i in idx[0]:
         d = vl[:,i]/vl[:,i].sum()
@@ -165,7 +164,7 @@ def random_va_mdp(num_a, num_s, max_num_x, args, Q_va=None):
     # generate a Q-function with set_x va-states only
     Q = va_states_repeat(num_a, num_s, states, args)
     # generate an random mdp with Q as the Q-function
-    T,R,rmin,rmax = random_skewed_mdp(num_a, num_s, args, Q)
+    T,R,Q,rmin,rmax = random_skewed_mdp(num_a, num_s, args, Q)
     return T,R,Q,rmin,rmax
     
 def va_states(Q, args):
